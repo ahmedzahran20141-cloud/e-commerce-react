@@ -36,3 +36,16 @@
     transform: rotate(360deg);
   }
 }
+
+body { background-color: #f8f9fa; }
+.App { text-align: center; }
+.modal-backdrop {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: flex; justify-content: center;
+    align-items: center; z-index: 999;
+}
+.modal-box {
+    background: white; padding: 20px; width: 320px;
+    border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+.height-500 { height: 500px; object-fit: cover; }

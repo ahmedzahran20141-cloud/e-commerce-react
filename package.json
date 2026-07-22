@@ -1,5 +1,5 @@
 {
-  "name": "project_2",
+  "name": "ecommerce-fullstack",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -7,9 +7,15 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "bootstrap": "^5.3.8",
+    "concurrently": "^10.0.3",
+    "json-server": "^0.17.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.1.0",
+    "sweetalert2": "^11.26.25",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
