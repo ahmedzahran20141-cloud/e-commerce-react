@@ -8,7 +8,6 @@ function Spinner({ text = "Loading..." }) {
       >
         <span className="visually-hidden">Loading...</span>
       </div>
-
       <h5 className="mt-3 text-muted">{text}</h5>
     </div>
   );

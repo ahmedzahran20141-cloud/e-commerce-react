@@ -1,8 +1,7 @@
 import Product from "./Product";
 import Spinner from "./Spinner";
 import { useEffect, useState } from "react";
-
-const API_URL = "http://localhost:9000/products";
+import { API_URL } from "../api";
 
 function ProductsList() {
   const [products, setProducts] = useState([]);
@@ -18,9 +17,7 @@ function ProductsList() {
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
-        setCategories([
-          ...new Set(data.map((p) => p.category).filter(Boolean)),
-        ]);
+        setCategories([...new Set(data.map((p) => p.category).filter(Boolean))]);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -28,16 +25,10 @@ function ProductsList() {
   const filteredProducts =
     selectedCategory === "all"
       ? products
-      : products.filter(
-          (p) => p.category === selectedCategory
-        );
+      : products.filter((p) => p.category === selectedCategory);
 
-  const totalPages = Math.ceil(
-    filteredProducts.length / productsPerPage
-  );
-
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const startIndex = (currentPage - 1) * productsPerPage;
-
   const currentProducts = filteredProducts.slice(
     startIndex,
     startIndex + productsPerPage
@@ -48,9 +39,7 @@ function ProductsList() {
     setCurrentPage(1);
   };
 
-  if (loading) {
-    return <Spinner text="Loading Store Products..." />;
-  }
+  if (loading) return <Spinner text="Loading Store Products..." />;
 
   return (
     <div className="container py-4">
@@ -60,7 +49,6 @@ function ProductsList() {
         onChange={changeCategory}
       >
         <option value="all">All Categories</option>
-
         {categories.map((cat) => (
           <option key={cat} value={cat}>
             {cat}
@@ -70,10 +58,7 @@ function ProductsList() {
 
       <div className="row">
         {currentProducts.map((product) => (
-          <div
-            className="col-md-3 mb-4"
-            key={product.id}
-          >
+          <div className="col-md-3 mb-4" key={product.id}>
             <Product product={product} />
           </div>
         ))}
@@ -81,16 +66,10 @@ function ProductsList() {
 
       <nav>
         <ul className="pagination justify-content-center">
-          <li
-            className={`page-item ${
-              currentPage === 1 ? "disabled" : ""
-            }`}
-          >
+          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <button
               className="page-link"
-              onClick={() =>
-                setCurrentPage(currentPage - 1)
-              }
+              onClick={() => setCurrentPage(currentPage - 1)}
             >
               Previous
             </button>
@@ -100,16 +79,12 @@ function ProductsList() {
             <li
               key={index}
               className={`page-item ${
-                currentPage === index + 1
-                  ? "active"
-                  : ""
+                currentPage === index + 1 ? "active" : ""
               }`}
             >
               <button
                 className="page-link"
-                onClick={() =>
-                  setCurrentPage(index + 1)
-                }
+                onClick={() => setCurrentPage(index + 1)}
               >
                 {index + 1}
               </button>
@@ -118,16 +93,12 @@ function ProductsList() {
 
           <li
             className={`page-item ${
-              currentPage === totalPages
-                ? "disabled"
-                : ""
+              currentPage === totalPages ? "disabled" : ""
             }`}
           >
             <button
               className="page-link"
-              onClick={() =>
-                setCurrentPage(currentPage + 1)
-              }
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </button>

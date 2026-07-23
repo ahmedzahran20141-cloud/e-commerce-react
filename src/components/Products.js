@@ -2,10 +2,20 @@ import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import Spinner from "./Spinner";
-
-const API_URL = "http://localhost:9000/products";
+import { authFetch, API_URL } from "../api";
 
 function Products() {
+  const backupImage =
+    "data:image/svg+xml;charset=UTF-8," +
+    encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+      <rect width="100%" height="100%" fill="#f8f9fa"/>
+      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="50" fill="#6c757d">
+              No Image
+      </text>
+    </svg>
+    `);
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -39,13 +49,15 @@ function Products() {
       confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await fetch(`${API_URL}/${product.id}`, {
-          method: "DELETE",
-        });
-
-        Swal.fire("Deleted!", "", "success");
-
-        getAllProducts();
+        try {
+          await authFetch(`${API_URL}/${product.id}`, {
+            method: "DELETE",
+          });
+          Swal.fire("Deleted!", "", "success");
+          getAllProducts();
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
       }
     });
   };
@@ -57,27 +69,17 @@ function Products() {
 
   const filteredProducts = useMemo(() => {
     return products
-      .filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
-      )
-      .filter((p) =>
-        category === "all" ? true : p.category === category
-      )
-      .sort((a, b) =>
-        sort === "low"
-          ? a.price - b.price
-          : sort === "high"
-          ? b.price - a.price
-          : 0
-      );
+      .filter((p) => p.title.toLowerCase().includes(search.toLowerCase()))
+      .filter((p) => (category === "all" ? true : p.category === category))
+      .sort((a, b) => {
+        if (sort === "low") return a.price - b.price;
+        if (sort === "high") return b.price - a.price;
+        return 0;
+      });
   }, [products, search, category, sort]);
 
-  const totalPages = Math.ceil(
-    filteredProducts.length / productsPerPage
-  );
-
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const startIndex = (currentPage - 1) * productsPerPage;
-
   const currentProducts = filteredProducts.slice(
     startIndex,
     startIndex + productsPerPage
@@ -85,26 +87,21 @@ function Products() {
 
   const resetPage = () => setCurrentPage(1);
 
-  if (loading) {
-    return <Spinner text="Loading Products..." />;
-  }
+  if (loading) return <Spinner text="Loading Products..." />;
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1>Manage Products</h1>
-
-        <Link
-          to="/admin/products/add"
-          className="btn btn-success"
-        >
-          + Add New Product
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Products</h2>
+        <Link to="/admin/products/add" className="btn btn-success">
+          + Add Product
         </Link>
       </div>
 
-      <div className="row mb-3 g-2">
+      <div className="row g-2 mb-4">
         <div className="col-md-4">
           <input
+            type="text"
             className="form-control"
             placeholder="Search..."
             value={search}
@@ -125,7 +122,6 @@ function Products() {
             }}
           >
             <option value="all">All Categories</option>
-
             {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -144,126 +140,116 @@ function Products() {
             }}
           >
             <option value="">Sort By Price</option>
-            <option value="low">Low to High</option>
-            <option value="high">High to Low</option>
+            <option value="low">Low → High</option>
+            <option value="high">High → Low</option>
           </select>
         </div>
       </div>
 
-      <table className="table table-striped align-middle">
-        <thead className="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Image</th>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {currentProducts.map((product) => (
-            <tr key={product.id}>
-              <td>{product.id}</td>
-
-              <td>
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  width="50"
-                  style={{ objectFit: "contain" }}
-                />
-              </td>
-
-              <td>{product.title}</td>
-
-              <td>
-                <span className="badge bg-secondary">
-                  {product.category}
-                </span>
-              </td>
-
-              <td>${product.price}</td>
-
-              <td>
-                <button
-                  className="btn btn-danger btn-sm me-2"
-                  onClick={() => deleteProduct(product)}
-                >
-                  Delete
-                </button>
-
-                <Link
-                  to={`/product/${product.id}`}
-                  className="btn btn-info btn-sm me-2"
-                >
-                  View
-                </Link>
-
-                <Link
-                  to={`/admin/products/edit/${product.id}`}
-                  className="btn btn-primary btn-sm"
-                >
-                  Edit
-                </Link>
-              </td>
+      <div className="table-responsive">
+        <table className="table table-striped table-hover align-middle">
+          <thead className="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Image</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th style={{ minWidth: "240px" }}>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      <nav>
-        <ul className="pagination justify-content-center">
-          <li
-            className={`page-item ${
-              currentPage === 1 ? "disabled" : ""
-            }`}
-          >
-            <button
-              className="page-link"
-              onClick={() =>
-                setCurrentPage(currentPage - 1)
-              }
-            >
-              Previous
-            </button>
-          </li>
+          <tbody>
+            {currentProducts.map((product) => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
+                <td>
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    width="60"
+                    height="60"
+                    style={{ objectFit: "contain" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = backupImage;
+                    }}
+                  />
+                </td>
+                <td>{product.title}</td>
+                <td>
+                  <span className="badge bg-secondary">{product.category}</span>
+                </td>
+                <td>${product.price}</td>
+                <td>
+                  <div className="d-flex gap-2 flex-nowrap">
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => deleteProduct(product)}
+                    >
+                      Delete
+                    </button>
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="btn btn-info btn-sm text-white"
+                    >
+                      View
+                    </Link>
+                    <Link
+                      to={`/admin/products/edit/${product.id}`}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Edit
+                    </Link>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-          {[...Array(totalPages)].map((_, index) => (
+      {totalPages > 1 && (
+        <nav className="mt-4">
+          <ul className="pagination justify-content-center">
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <button
+                className="page-link"
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                Previous
+              </button>
+            </li>
+            {[...Array(totalPages)].map((_, index) => (
+              <li
+                key={index}
+                className={`page-item ${
+                  currentPage === index + 1 ? "active" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
             <li
-              key={index}
               className={`page-item ${
-                currentPage === index + 1 ? "active" : ""
+                currentPage === totalPages ? "disabled" : ""
               }`}
             >
               <button
                 className="page-link"
-                onClick={() =>
-                  setCurrentPage(index + 1)
-                }
+                onClick={() => setCurrentPage((p) => p + 1)}
               >
-                {index + 1}
+                Next
               </button>
             </li>
-          ))}
-
-          <li
-            className={`page-item ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-          >
-            <button
-              className="page-link"
-              onClick={() =>
-                setCurrentPage(currentPage + 1)
-              }
-            >
-              Next
-            </button>
-          </li>
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      )}
     </>
   );
 }

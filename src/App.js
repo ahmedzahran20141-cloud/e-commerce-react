@@ -36,7 +36,6 @@ function App() {
 
       <div className="container mt-4">
         <Routes>
-
           {/* Customer */}
           <Route
             path="/"
@@ -48,33 +47,13 @@ function App() {
             }
           />
 
-          <Route
-            path="/about"
-            element={<About />}
-          />
-
-          <Route
-            path="/product/:productId"
-            element={<ProductDetails />}
-          />
-
-          <Route
-            path="/cart"
-            element={<Cart />}
-          />
-
-          <Route
-            path="/orders"
-            element={<Orders />}
-          />
-
-          <Route
-            path="/login"
-            element={<Login />}
-          />
+          <Route path="/about" element={<About />} />
+          <Route path="/product/:productId" element={<ProductDetails />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/login" element={<Login />} />
 
           {/* Admin */}
-
           <Route
             path="/admin"
             element={
@@ -111,10 +90,7 @@ function App() {
             }
           />
 
-          <Route
-            path="*"
-            element={<NotFound />}
-          />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </div>

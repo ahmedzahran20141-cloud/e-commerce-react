@@ -53,12 +53,8 @@
       "title": "John Hardy Women's Legends Naga Gold & Silver Dragon Station Chain Bracelet",
       "price": 695,
       "description": "From our Legends Collection, the Naga was inspired by the mythical water dragon.",
-      "category": "jewelery",
       "image": "https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_t.png",
-      "rating": {
-        "rate": 4.6,
-        "count": 400
-      }
+      "category": "jewelery"
     },
     {
       "id": "6",
@@ -237,5 +233,16 @@
       "category": "women's clothing"
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "admins": [
+    {
+      "email": "ahmedzahran20141@gmail.com",
+      "name": "Ahmed Zahran",
+      "password": "$2b$10$/xekAEOepFfuAqhDfGWp8O6Zp293veNQ0Yix7kIij22xh6WSc15hW"
+    },
+    {
+      "email": "abdelhamidzahran1988@gmail.com",
+      "name": "Abdelhamid Zahran",
+      "password": "$2b$10$/xekAEOepFfuAqhDfGWp8O6Zp293veNQ0Yix7kIij22xh6WSc15hW"
+    }
+  ]
 }

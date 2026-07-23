@@ -6,20 +6,22 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
 
-    if (password.length < 9) {
-      setError("Wrong Password Length");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
-    const success = login(email, password);
+    setLoading(true);
+    const success = await login(email, password);
+    setLoading(false);
 
     if (!success) {
       setError("Invalid Email or Password.");
@@ -31,16 +33,11 @@ function Login() {
       <div className="card shadow p-4">
         <h2 className="text-center mb-4">Admin Login</h2>
 
-        {error && (
-          <div className="alert alert-danger">
-            {error}
-          </div>
-        )}
+        {error && <div className="alert alert-danger">{error}</div>}
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-3">
             <label className="form-label">Email</label>
-
             <input
               type="email"
               className="form-control"
@@ -52,7 +49,6 @@ function Login() {
 
           <div className="mb-3">
             <label className="form-label">Password</label>
-
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -61,7 +57,6 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-
               <button
                 type="button"
                 className="btn btn-outline-secondary"
@@ -72,8 +67,12 @@ function Login() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-dark w-100">
-            Login
+          <button
+            type="submit"
+            className="btn btn-dark w-100"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>
