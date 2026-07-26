@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
+import { Link } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -13,11 +13,6 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return;
-    }
 
     setLoading(true);
     const success = await login(email, password);
@@ -31,11 +26,11 @@ function Login() {
   return (
     <div className="col-md-5 mx-auto mt-5">
       <div className="card shadow p-4">
-        <h2 className="text-center mb-4">Admin Login</h2>
+        <h2 className="text-center mb-4">User Login</h2>
 
         {error && <div className="alert alert-danger">{error}</div>}
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label">Email</label>
             <input
@@ -49,32 +44,23 @@ function Login() {
 
           <div className="mb-3">
             <label className="form-label">Password</label>
-            <div className="input-group">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="form-control"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
+            <input
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-dark w-100"
-            disabled={loading}
-          >
+          <button type="submit" className="btn btn-dark w-100" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <p className="mt-3 text-center">
+          Don't have an account? <Link to="/register">Register here</Link>
+        </p>
       </div>
     </div>
   );

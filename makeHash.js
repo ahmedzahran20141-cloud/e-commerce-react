@@ -1,5 +1,8 @@
 const bcrypt = require("bcryptjs");
 
-const password = "CCIEsecurity2015";
+async function generateHash() {
+  const hash = await bcrypt.hash("CCIEsecurity2015", 10);
+  console.log("Hashed Password:", hash);
+}
 
-console.log(bcrypt.hashSync(password, 10));
+generateHash();

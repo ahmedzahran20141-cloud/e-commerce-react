@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { authFetch, API_URL } from "../api";
+import { authFetch, API_URL, UPLOAD_URL } from "../api";
 
 function AddProduct() {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageType, setImageType] = useState("upload");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,169 +21,242 @@ function AddProduct() {
     if (
       !title.trim() ||
       !description.trim() ||
-      !image.trim() ||
       !category.trim()
     ) {
       Swal.fire(
         "Warning",
-        "Please fill in all required fields.",
+        "Please fill all fields.",
         "warning"
       );
       return;
     }
 
-    if (Number(price) <= 0) {
+    if (imageType === "upload" && !imageFile) {
       Swal.fire(
         "Warning",
-        "Price must be greater than zero.",
+        "Please choose an image.",
         "warning"
       );
       return;
     }
+
+    if (imageType === "url" && !imageUrl.trim()) {
+      Swal.fire(
+        "Warning",
+        "Please enter image URL.",
+        "warning"
+      );
+      return;
+    }
+
 
     try {
       setLoading(true);
 
-      const response = await authFetch(API_URL, {
+      let finalImage = "";
+
+
+      // Upload using Multer
+      if (imageType === "upload") {
+
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+
+        const uploadRes = await authFetch(UPLOAD_URL, {
+          method: "POST",
+          body: formData,
+        });
+
+
+        const uploadData = await uploadRes.json();
+
+
+        if (!uploadRes.ok) {
+          throw new Error(
+            uploadData.message || "Image upload failed"
+          );
+        }
+
+
+        finalImage = uploadData.imageUrl;
+
+      } 
+
+      // Use image URL
+      else {
+
+        finalImage = imageUrl.trim();
+
+      }
+
+
+
+      const postRes = await authFetch(API_URL, {
         method: "POST",
+
         body: JSON.stringify({
+
           title: title.trim(),
+
           price: Number(price),
+
           description: description.trim(),
-          image: image.trim(),
+
+          image: finalImage,
+
           category: category.trim(),
+
         }),
       });
 
-      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add product.");
+      const postData = await postRes.json();
+
+
+      if (!postRes.ok) {
+        throw new Error(
+          postData.message || "Failed to add product"
+        );
       }
 
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Product added successfully.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+
+      Swal.fire(
+        "Success!",
+        "Product Added Successfully",
+        "success"
+      );
+
 
       navigate("/admin/products");
+
+
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message,
-      });
+
+      Swal.fire(
+        "Error",
+        error.message,
+        "error"
+      );
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
+
   return (
     <div className="col-md-6 mx-auto py-4">
-      <div className="card shadow border-0">
-        <div className="card-body">
-          <h2 className="text-center mb-4">
-            Add Product
-          </h2>
 
-          <form onSubmit={formSubmit}>
-            <div className="mb-3">
-              <label className="form-label">
-                Product Title
-              </label>
+      <div className="card shadow p-4 border-0">
 
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Wireless Mouse"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
+        <h1 className="h3 mb-4 text-center">
+          Add Product
+        </h1>
 
-            <div className="mb-3">
-              <label className="form-label">
-                Price ($)
-              </label>
 
-              <input
-                type="number"
-                className="form-control"
-                min="0.01"
-                step="0.01"
-                placeholder="99.99"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-            </div>
+        <form onSubmit={formSubmit}>
 
-            <div className="mb-3">
-              <label className="form-label">
-                Image URL
-              </label>
 
-              <input
-                type="url"
-                className="form-control"
-                placeholder="https://example.com/image.jpg"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                required
-              />
-            </div>
+          <input
+            className="form-control mb-3"
+            placeholder="Title"
+            value={title}
+            onChange={(e)=>setTitle(e.target.value)}
+          />
 
-            <div className="mb-3">
-              <label className="form-label">
-                Category
-              </label>
 
-              <input
-                type="text"
-                className="form-control"
-                placeholder="electronics"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-              />
-            </div>
+          <input
+            className="form-control mb-3"
+            type="number"
+            step="0.01"
+            placeholder="Price"
+            value={price}
+            onChange={(e)=>setPrice(e.target.value)}
+          />
 
-            <div className="mb-4">
-              <label className="form-label">
-                Description
-              </label>
 
-              <textarea
-                rows="4"
-                className="form-control"
-                placeholder="Enter product description..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-            </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2"></span>
-                  Adding...
-                </>
-              ) : (
-                "Add Product"
-              )}
-            </button>
-          </form>
-        </div>
+          <select
+            className="form-select mb-3"
+            value={imageType}
+            onChange={(e)=>setImageType(e.target.value)}
+          >
+
+            <option value="upload">
+              Upload Image
+            </option>
+
+            <option value="url">
+              Image URL
+            </option>
+
+          </select>
+
+
+
+          {imageType === "upload" ? (
+
+            <input
+              className="form-control mb-3"
+              type="file"
+              accept="image/*"
+              onChange={(e)=>
+                setImageFile(e.target.files[0])
+              }
+            />
+
+          ) : (
+
+            <input
+              className="form-control mb-3"
+              type="text"
+              placeholder="https://example.com/image.jpg"
+              value={imageUrl}
+              onChange={(e)=>
+                setImageUrl(e.target.value)
+              }
+            />
+
+          )}
+
+
+
+          <input
+            className="form-control mb-3"
+            placeholder="Category"
+            value={category}
+            onChange={(e)=>setCategory(e.target.value)}
+          />
+
+
+
+          <textarea
+            className="form-control mb-3"
+            rows="4"
+            placeholder="Description"
+            value={description}
+            onChange={(e)=>setDescription(e.target.value)}
+          />
+
+
+
+          <button
+            className="btn btn-primary w-100"
+            disabled={loading}
+          >
+
+            {loading ? "Adding..." : "Add Product"}
+
+          </button>
+
+
+        </form>
+
       </div>
+
     </div>
   );
 }

@@ -8,28 +8,26 @@ function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(API_URL)
+    fetch(`${API_URL}/all`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);
-        setCategories([...new Set(data.map((p) => p.category).filter(Boolean))]);
+
+        setCategories(
+          [...new Set(data.map((p) => p.category).filter(Boolean))]
+        );
       })
+      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading)
-    return (
-      <div className="text-center mt-5">
-        <h2>Loading...</h2>
-      </div>
-    );
+  if (loading) return <div className="text-center mt-5"><h2>Loading...</h2></div>;
 
   return (
     <>
       <section className="bg-dark text-white py-5 rounded mb-5">
         <div className="container text-center">
           <h1 className="display-4 fw-bold">Admin Dashboard</h1>
-          <p className="lead mt-3">Manage your store products here.</p>
           <Link to="/admin/products" className="btn btn-primary btn-lg mt-3">
             Manage Products
           </Link>
