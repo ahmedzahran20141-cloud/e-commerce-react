@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ["admin", "customer"], default: "customer" },
+  role: { type: String, enum: ["admin", "customer", "driver"], default: "customer" },
 });
 
 const counterSchema = new mongoose.Schema({
@@ -218,7 +218,9 @@ const productsData = [
 async function seedDatabase() {
   try {
     console.log("⏳ Connecting to MongoDB...");
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(MONGO_URI, {
+            serverSelectionTimeoutMS: 5000,
+          });
     console.log("✅ Connected!");
 
     await User.deleteMany({});
@@ -240,6 +242,12 @@ async function seedDatabase() {
         name: "Abdelhamid Zahran",
         password: defaultPasswordHash,
         role: "customer",
+      },
+      {
+        email: "alizahran461988@gmail.com",
+        name: "Ali Zahran",
+        role: "driver",
+        password: defaultPasswordHash,
       },
     ];
 

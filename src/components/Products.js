@@ -180,7 +180,7 @@ function Products() {
       <table className="table table-striped">
 
 
-        <thead>
+        <thead className="table-dark">
 
           <tr>
 

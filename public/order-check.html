@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Driver Order Tracking</title>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<style>
+
+body{
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    background:#f5f5f5;
+
+}
+
+
+.container{
+
+    width:500px;
+
+    margin:50px auto;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:10px;
+
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+
+}
+
+
+
+h2{
+
+    text-align:center;
+
+}
+
+
+
+label{
+
+    font-weight:bold;
+
+}
+
+
+
+select{
+
+    width:100%;
+
+    padding:10px;
+
+    margin:15px 0;
+
+}
+
+
+
+h3{
+
+    color:#0d6efd;
+
+}
+
+
+
+button{
+
+    padding:10px 20px;
+
+    border:none;
+
+    border-radius:5px;
+
+    color:white;
+
+    cursor:pointer;
+
+    margin-right:10px;
+
+}
+
+
+
+#nextBtn{
+
+    background:#0d6efd;
+
+}
+
+
+
+#refreshBtn{
+
+    background:green;
+
+}
+
+
+
+.info{
+
+    background:#eee;
+
+    padding:10px;
+
+    margin-top:15px;
+
+    border-radius:5px;
+
+}
+
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h2>
+🚚 Driver Order Tracking
+</h2>
+
+
+<label>
+Select Order
+</label>
+
+
+<select id="orderId" onchange="loadOrder()">
+
+<option value="">
+-- Select Order --
+</option>
+
+</select>
+
+
+
+<div class="info">
+
+
+<p id="email">
+Customer Email : -
+</p>
+
+
+<p id="total">
+Total : -
+</p>
+
+
+</div>
+
+
+
+<hr>
+
+
+
+<h3 id="status">
+
+Status : -
+
+</h3>
+
+
+
+<button id="nextBtn" onclick="nextStatus()">
+
+Next Status
+
+</button>
+
+
+
+<button id="refreshBtn" onclick="loadOrders()">
+
+Refresh
+
+</button>
+
+
+
+</div>
+
+
+
+<script>
+
+
+const API = "http://localhost:9000";
+
+
+const token = localStorage.getItem("token");
+
+
+let order = null;
+
+
+
+const statuses = [
+
+"Pending",
+
+"Processing",
+
+"Shipped",
+
+"Delivered"
+
+];
+
+
+
+if(!token){
+
+
+Swal.fire({
+
+icon:"error",
+
+title:"Login Required",
+
+text:"Please login as driver first"
+
+}).then(()=>{
+
+window.location.href="/";
+
+});
+
+
+}
+
+// ===============================
+// Load Orders
+// ===============================
+
+async function loadOrders(){
+
+try{
+
+
+const res = await fetch(
+`${API}/orders`,
+{
+headers:{
+Authorization:`Bearer ${token}`
+}
+}
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!res.ok){
+
+Swal.fire({
+
+icon:"error",
+
+title:"Cannot Load Orders",
+
+text:data.message || "Failed to load orders"
+
+});
+
+return;
+
+}
+
+
+
+const select = document.getElementById("orderId");
+
+
+
+select.innerHTML = `
+
+<option value="">
+
+-- Select Order --
+
+</option>
+
+`;
+
+
+
+data.forEach(o=>{
+
+
+select.innerHTML += `
+
+<option value="${o._id}">
+
+${o.userEmail} - ${o.status}
+
+</option>
+
+`;
+
+});
+
+
+
+}
+
+catch(error){
+
+
+console.error(error);
+
+
+Swal.fire({
+
+icon:"error",
+
+title:"Server Error",
+
+text:"Cannot connect to server"
+
+});
+
+
+}
+
+
+}
+
+
+
+
+// ===============================
+// Load Single Order
+// ===============================
+
+
+async function loadOrder(){
+
+
+const id = document.getElementById("orderId").value;
+
+
+
+if(!id){
+
+return;
+
+}
+
+
+
+try{
+
+
+const res = await fetch(
+
+`${API}/orders/${id}`,
+
+{
+
+headers:{
+
+Authorization:`Bearer ${token}`
+
+}
+
+}
+
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!res.ok){
+
+
+Swal.fire({
+
+icon:"error",
+
+title:"Error",
+
+text:data.message || "Cannot load order"
+
+});
+
+
+return;
+
+}
+
+
+
+order = data;
+
+
+
+document.getElementById("status").innerHTML =
+
+"Status : " + order.status;
+
+
+
+document.getElementById("email").innerHTML =
+
+"Customer Email : " + order.userEmail;
+
+
+
+document.getElementById("total").innerHTML =
+
+"Total : $" + order.total;
+
+
+
+updateButton();
+
+
+}
+
+catch(error){
+
+
+Swal.fire({
+
+icon:"error",
+
+title:"Error",
+
+text:"Failed to load order details"
+
+});
+
+
+}
+
+
+
+}
+
+
+
+
+// ===============================
+// Button Control
+// ===============================
+
+
+function updateButton(){
+
+
+if(!order){
+
+return;
+
+}
+
+
+
+if(
+
+order.status==="Delivered" ||
+
+order.status==="Cancelled"
+
+){
+
+
+document.getElementById("nextBtn").style.display="none";
+
+
+}
+
+else{
+
+
+document.getElementById("nextBtn").style.display="inline-block";
+
+
+}
+
+
+}
+
+// ===============================
+// Driver Update Status
+// ===============================
+
+async function nextStatus(){
+
+
+if(!order){
+
+
+Swal.fire({
+
+icon:"warning",
+
+title:"No Order Selected",
+
+text:"Please select an order first"
+
+});
+
+
+return;
+
+}
+
+
+
+let index = statuses.indexOf(order.status);
+
+
+
+if(index < statuses.length - 1){
+
+
+const newStatus = statuses[index + 1];
+
+
+
+try{
+
+
+const res = await fetch(
+
+`${API}/orders/${order._id}/driver`,
+
+{
+
+method:"PUT",
+
+headers:{
+
+"Content-Type":"application/json",
+
+Authorization:`Bearer ${token}`
+
+},
+
+
+body:JSON.stringify({
+
+status:newStatus
+
+})
+
+}
+
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!res.ok){
+
+
+Swal.fire({
+
+icon:"error",
+
+title:"Update Failed",
+
+text:data.message || "Cannot update status"
+
+});
+
+
+return;
+
+}
+
+
+
+order.status = newStatus;
+
+
+
+document.getElementById("status").innerHTML =
+
+"Status : " + order.status;
+
+
+
+updateButton();
+
+
+
+Swal.fire({
+
+icon:"success",
+
+title:"Status Updated",
+
+text:`Order moved to ${order.status}`,
+
+timer:1500
+
+});
+
+
+
+loadOrders();
+
+
+
+}
+
+
+catch(error){
+
+
+Swal.fire({
+
+icon:"error",
+
+title:"Server Error",
+
+text:"Cannot connect to server"
+
+});
+
+
+}
+
+
+
+}
+
+else{
+
+
+Swal.fire({
+
+icon:"info",
+
+title:"Completed",
+
+text:"Order already delivered"
+
+});
+
+
+}
+
+
+
+}
+
+
+
+// ===============================
+// Start Page
+// ===============================
+
+window.onload = function(){
+
+
+loadOrders();
+
+
+};
+
+</script>
+</body>
+</html>

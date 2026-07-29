@@ -16,7 +16,7 @@ function ProductDetails() {
         </text>
       </svg>
     `);
-  
+
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);

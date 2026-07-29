@@ -120,6 +120,25 @@ function Navbar() {
               </li>
             )}
 
+            {user?.role === "driver" && (
+              <>
+                <Link
+                  className="nav-link"
+                  to="/orders"
+                  onClick={closeMenu}
+                >
+                  Orders
+                </Link>
+
+                <a
+                  className="nav-link"
+                  href="/order-check.html"
+                >
+                  Driver
+                </a>
+              </>
+            )}
+
 
 
             {/* Admin */}
@@ -180,6 +199,15 @@ function Navbar() {
                       to="/orders"
                     >
                       View Orders
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      to="/admin/orders"
+                    >
+                      Edit Orders
                     </Link>
                   </li>
 

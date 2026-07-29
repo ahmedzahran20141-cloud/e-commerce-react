@@ -172,6 +172,7 @@ function AddProduct() {
             className="form-control mb-3"
             type="number"
             step="0.01"
+            min={0.01}
             placeholder="Price"
             value={price}
             onChange={(e)=>setPrice(e.target.value)}
